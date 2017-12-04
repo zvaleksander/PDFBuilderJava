@@ -23,11 +23,11 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.google.gson.Gson;
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.WriterException;
-import com.google.zxing.client.j2se.MatrixToImageWriter;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
+//import com.google.zxing.BarcodeFormat;
+//import com.google.zxing.WriterException;
+//import com.google.zxing.client.j2se.MatrixToImageWriter;
+//import com.google.zxing.common.BitMatrix;
+//import com.google.zxing.qrcode.QRCodeWriter;
 
 import com.itextpdf.text.BadElementException;
 import com.itextpdf.text.BaseColor;
@@ -243,8 +243,8 @@ public class XMLToPDF {
 					temp = children.item(index).getTextContent().trim();
 					response = Utils.validate(temp);
 					
-					if(response == Response.PLAIN_TEXT.value()) text = text.concat(temp).concat("\n\n");
-					else if(response == Response.DATA.value()) text = text.concat(parser.getValue(temp)).concat("\n\n");
+					if(response == Response.PLAIN_TEXT.value()) text = text.concat(temp).concat("\n");
+					else if(response == Response.DATA.value()) text = text.concat(parser.getValue(temp)).concat("\n");
 				}
 				PdfPCell container = getCell(getPhrase(text, parentAttributes), parentAttributes);
 								
@@ -505,31 +505,31 @@ public class XMLToPDF {
 		return null;
 	}
 	
-	@SuppressWarnings("unused")
-	private byte[] getQRCodeImage(String text) {
-		Map<com.google.zxing.EncodeHintType, Object> hintMap = new HashMap<com.google.zxing.EncodeHintType, Object>();
-		hintMap.put(com.google.zxing.EncodeHintType.CHARACTER_SET, "UTF-8");
-		hintMap.put(com.google.zxing.EncodeHintType.MARGIN, 0);
-		hintMap.put(com.google.zxing.EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.Q);
-		
-		QRCodeWriter qrCodeWriter = new QRCodeWriter();
-	    BitMatrix bitMatrix;
-	    ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
-		try {
-			bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, 227, 227);
-			MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
-		} 
-		catch (WriterException e) {
-			e.printStackTrace();
-		} 
-		catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-	    byte[] pngData = pngOutputStream.toByteArray();
-	    
-	    return pngData;
-	}
+//	@SuppressWarnings("unused")
+//	private byte[] getQRCodeImage(String text) {
+//		Map<com.google.zxing.EncodeHintType, Object> hintMap = new HashMap<com.google.zxing.EncodeHintType, Object>();
+//		hintMap.put(com.google.zxing.EncodeHintType.CHARACTER_SET, "UTF-8");
+//		hintMap.put(com.google.zxing.EncodeHintType.MARGIN, 0);
+//		hintMap.put(com.google.zxing.EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.Q);
+//		
+//		QRCodeWriter qrCodeWriter = new QRCodeWriter();
+//	    BitMatrix bitMatrix;
+//	    ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
+//		try {
+//			bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, 227, 227);
+//			MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
+//		} 
+//		catch (WriterException e) {
+//			e.printStackTrace();
+//		} 
+//		catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//		
+//	    byte[] pngData = pngOutputStream.toByteArray();
+//	    
+//	    return pngData;
+//	}
 	
 	public void help() {
 		System.out.println("-------------------");

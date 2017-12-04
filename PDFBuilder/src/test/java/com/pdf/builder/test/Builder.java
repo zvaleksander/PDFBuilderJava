@@ -17,7 +17,7 @@ import com.pdf.builder.util.Utils;
 
 public class Builder {
 
-	private static final String INPUT = "C:\\Users\\ULASALLE\\Desktop\\input2.xml"; 
+	private static final String INPUT = "C:\\Users\\ULASALLE\\Desktop\\input.xml"; 
 	private static final String OUTPUT = "C:\\Users\\ULASALLE\\Desktop\\output.pdf";
 	private static final String OUTPUT_ARRAY = "C:\\Users\\ULASALLE\\Desktop\\output_array.pdf";
 	
