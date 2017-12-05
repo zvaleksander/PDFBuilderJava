@@ -49,9 +49,11 @@ import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.pdf.builder.util.Attribute;
 import com.pdf.builder.util.Cell;
+import com.pdf.builder.util.FooterEvent;
 import com.pdf.builder.util.PDFEvent;
 import com.pdf.builder.util.Global.Property;
 import com.pdf.builder.util.Global.Type;
+import com.pdf.builder.util.HeaderEvent;
 import com.pdf.builder.util.Global.Label;
 import com.pdf.builder.util.Global.Response;
 import com.pdf.builder.util.Parser;
@@ -63,7 +65,9 @@ import com.itextpdf.text.pdf.qrcode.ErrorCorrectionLevel;
 public class XMLToPDF {
 
 	private Document document;
-	private PdfWriter writer; 
+	private PdfWriter writer;
+	private PdfPTable header;
+	private PdfPTable footer;
 	private PdfPTable body;
 	private List<Cell> content;
 	
@@ -74,9 +78,17 @@ public class XMLToPDF {
 	
 	private ByteArrayOutputStream byteArrayOutputStream  = new ByteArrayOutputStream();
 	
+	private float marginLeft; 
+	private float marginRight; 
+	private float marginTop; 
+	private float marginBottom;
+	
 	public XMLToPDF(String inputPath, String outputPath, Object data, float marginLeft, float marginRight, float marginTop, float marginBottom, boolean vertical) {
 		this.data = new JSONObject(new Gson().toJson(data));
         this.parser = new Parser(this.data);
+        
+        this.marginLeft = marginLeft;
+        
         
 		File file = new File(inputPath);
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -122,25 +134,47 @@ public class XMLToPDF {
 	}
 	
 	public void build() {
-		document.open();
-		
 		int columns = Integer.parseInt(xml.getDocumentElement().getAttribute(Property.NUMBER_COLUMNS.value()));
+		
+		// cambios
+		header = new PdfPTable(columns);
+		header.setHorizontalAlignment(Element.ALIGN_JUSTIFIED);
+		header.setWidthPercentage(100);
+		
+		footer = new PdfPTable(columns);
+		footer.setHorizontalAlignment(Element.ALIGN_JUSTIFIED);
+		footer.setWidthPercentage(100);
+		// \cambios
 		
  		body = new PdfPTable(columns);
 		body.setHorizontalAlignment(Element.ALIGN_JUSTIFIED);
 		body.setWidthPercentage(100);
 				
 		content = new ArrayList<Cell>();
+
+		// cambios
+		NodeList header = xml.getElementsByTagName(Label.HEADER.value());
+		NodeList footer = xml.getElementsByTagName(Label.FOOTER.value());
+		NodeList elements = xml.getElementsByTagName(Label.BODY.value());
+		// \cambios
 		
 		NodeList groups = xml.getElementsByTagName(Label.GROUP.value());
 		NodeList waterMark = xml.getElementsByTagName(Label.WATERMARK.value());
 		
 		if(waterMark.getLength() > 0) buildWaterMark(waterMark.item(0));
 		
+		writer.setPageEvent(new FooterEvent());
+		writer.setPageEvent(new HeaderEvent());
+		
 		for(int index = 0; index < groups.getLength(); index++) 
 			content.add(buildElements(groups.item(index)));
 		
 		addContent(columns);
+		
+		document.setMargins(50, 10, 10, 10);
+		document.setMarginMirroring(false);
+		document.open();
+		
 		try {
 			document.add(body);
 		} 
@@ -157,10 +191,15 @@ public class XMLToPDF {
 	}
 	
 	private void create(String output, float marginLeft, float marginRight, float marginTop, float marginBottom, boolean vertical) {
+//		if(vertical)
+//			document = new Document(PageSize.A4, marginLeft, marginRight, marginTop, marginBottom);
+//		else
+//			document = new Document(PageSize.A4.rotate(), marginLeft, marginRight, marginTop, marginBottom);
+		
 		if(vertical)
-			document = new Document(PageSize.A4, marginLeft, marginRight, marginTop, marginBottom);
+			document = new Document(PageSize.A4);
 		else
-			document = new Document(PageSize.A4.rotate(), marginLeft, marginRight, marginTop, marginBottom);
+			document = new Document(PageSize.A4.rotate());
 		
         try {
         	

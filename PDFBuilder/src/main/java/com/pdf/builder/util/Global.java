@@ -4,6 +4,9 @@ public class Global {
 
 	public enum Label {
 		PDF 	  ("XMLToPDF"), 
+		BODY 	  ("body"),
+		HEADER 	  ("header"),
+		FOOTER 	  ("footer"),
 		GROUP 	  ("group"), 
 		TEXT 	  ("text"), 
 		SOURCE    ("source"), 

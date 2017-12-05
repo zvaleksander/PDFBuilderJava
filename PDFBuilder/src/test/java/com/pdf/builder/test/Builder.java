@@ -34,7 +34,7 @@ public class Builder {
 	}
 	
 	public static void create(Documento documento) {
-		XMLToPDF instance = new XMLToPDF(INPUT, OUTPUT, documento, 15, 15, 15, 15, true);
+		XMLToPDF instance = new XMLToPDF(INPUT, OUTPUT, documento, 15, 15, 55, 15, true);
 		instance.help();
 		instance.build();
 	}

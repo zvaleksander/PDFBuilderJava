@@ -1,0 +1,11 @@
+com\pdf\builder\util\Global.class
+com\pdf\builder\util\Global$Type.class
+com\pdf\builder\core\XMLToPDF.class
+com\pdf\builder\util\PDFEvent.class
+com\pdf\builder\util\Global$Property.class
+com\pdf\builder\util\Attribute.class
+com\pdf\builder\util\Utils.class
+com\pdf\builder\util\Global$Response.class
+com\pdf\builder\util\Cell.class
+com\pdf\builder\util\Global$Label.class
+com\pdf\builder\util\Parser.class
