@@ -17,30 +17,30 @@ import com.pdf.builder.util.Utils;
 
 public class Builder {
 
-	private static final String INPUT = "C:\\Users\\ULASALLE\\Desktop\\input.xml"; 
-	private static final String OUTPUT = "C:\\Users\\ULASALLE\\Desktop\\output.pdf";
-	private static final String OUTPUT_ARRAY = "C:\\Users\\ULASALLE\\Desktop\\output_array.pdf";
+	private static final String INPUT = "C:\\Users\\xixaos\\Desktop\\input.xml"; 
+	private static final String OUTPUT = "C:\\Users\\xixaos\\Desktop\\output.pdf";
+	private static final String OUTPUT_ARRAY = "C:\\Users\\xixaos\\Desktop\\output_array.pdf";
 	
 	public static void main(String[] args) throws DocumentException, ParserConfigurationException, SAXException, IOException {
 		
-		String logo = "C:\\Users\\ULASALLE\\Desktop\\batman.png";
+		String logo = "C:\\Users\\xixaos\\Desktop\\batman.png";
 		
 		Documento documento = new Documento(2, "73037079108", "F001", "1001", "CALLE LOS GIRASOLES MZ. C LT. 15", "SFU LA SALLE", "USD", "Ninguna observación", Utils.extractBytes(logo));
 		
 		create(documento);
-		createAsByteArray(documento);
+//		createAsByteArray(documento);
 		
 		System.out.println("Done");
 	}
 	
 	public static void create(Documento documento) {
-		XMLToPDF instance = new XMLToPDF(INPUT, OUTPUT, documento, 15, 15, 55, 15, true);
-		instance.help();
+		XMLToPDF instance = new XMLToPDF(INPUT, OUTPUT, documento, 25, 25, 25, 25, true);
+//		instance.help();
 		instance.build();
 	}
 	
 	public static void createAsByteArray(Documento documento) {
-		XMLToPDF instance = new XMLToPDF(Utils.extractBytes(INPUT), documento, 15, 15, 15, 15, true);
+		XMLToPDF instance = new XMLToPDF(Utils.extractBytes(INPUT), documento, 25, 25, 25, 25, true);
 		instance.build();
 		
 		byte[] bytes = instance.getDocumentAsByteArray();

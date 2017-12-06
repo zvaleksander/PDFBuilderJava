@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -23,11 +25,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.google.gson.Gson;
-//import com.google.zxing.BarcodeFormat;
-//import com.google.zxing.WriterException;
-//import com.google.zxing.client.j2se.MatrixToImageWriter;
-//import com.google.zxing.common.BitMatrix;
-//import com.google.zxing.qrcode.QRCodeWriter;
 
 import com.itextpdf.text.BadElementException;
 import com.itextpdf.text.BaseColor;
@@ -66,10 +63,6 @@ public class XMLToPDF {
 
 	private Document document;
 	private PdfWriter writer;
-	private PdfPTable header;
-	private PdfPTable footer;
-	private PdfPTable body;
-	private List<Cell> content;
 	
 	private org.w3c.dom.Document xml;
 	
@@ -83,12 +76,16 @@ public class XMLToPDF {
 	private float marginTop; 
 	private float marginBottom;
 	
+	private static final Logger logger = Logger.getLogger(XMLToPDF.class.getName());
+	
 	public XMLToPDF(String inputPath, String outputPath, Object data, float marginLeft, float marginRight, float marginTop, float marginBottom, boolean vertical) {
 		this.data = new JSONObject(new Gson().toJson(data));
         this.parser = new Parser(this.data);
         
         this.marginLeft = marginLeft;
-        
+        this.marginRight = marginRight;
+        this.marginBottom = marginBottom;
+        this.marginTop = marginTop;
         
 		File file = new File(inputPath);
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -100,19 +97,24 @@ public class XMLToPDF {
 			create(outputPath, marginLeft, marginRight, marginTop, marginBottom, vertical);
 		}
 		catch (ParserConfigurationException e) {
-			e.printStackTrace();
+			logger.log(Level.SEVERE, e.getMessage(), e);
 		}
 		catch (SAXException e) {
-			e.printStackTrace();
+			logger.log(Level.SEVERE, e.getMessage(), e);
 		}
 		catch (IOException e) {
-			e.printStackTrace();
+			logger.log(Level.SEVERE, e.getMessage(), e);
 		}
 	}
 	
 	public XMLToPDF(byte [] xmlFile, Object data, float marginLeft, float marginRight, float marginTop, float marginBottom, boolean vertical) {
 		this.data = new JSONObject(new Gson().toJson(data));
         this.parser = new Parser(this.data);
+        
+        this.marginLeft = marginLeft;
+        this.marginRight = marginRight;
+        this.marginBottom = marginBottom;
+        this.marginTop = marginTop;
         
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder builder;
@@ -123,55 +125,66 @@ public class XMLToPDF {
 			create(null, marginLeft, marginRight, marginTop, marginBottom, vertical);
 		} 
 		catch (ParserConfigurationException e) {
-			e.printStackTrace();
+			logger.log(Level.SEVERE, e.getMessage(), e);
 		} 
 		catch (SAXException e) {
-			e.printStackTrace();
+			logger.log(Level.SEVERE, e.getMessage(), e);
 		} 
 		catch (IOException e) {
-			e.printStackTrace();
+			logger.log(Level.SEVERE, e.getMessage(), e);
 		}
 	}
 	
 	public void build() {
 		int columns = Integer.parseInt(xml.getDocumentElement().getAttribute(Property.NUMBER_COLUMNS.value()));
 		
-		// cambios
-		header = new PdfPTable(columns);
+		PdfPTable header = new PdfPTable(columns);
 		header.setHorizontalAlignment(Element.ALIGN_JUSTIFIED);
 		header.setWidthPercentage(100);
 		
-		footer = new PdfPTable(columns);
+		PdfPTable footer = new PdfPTable(columns);
 		footer.setHorizontalAlignment(Element.ALIGN_JUSTIFIED);
 		footer.setWidthPercentage(100);
-		// \cambios
 		
- 		body = new PdfPTable(columns);
+		PdfPTable body = new PdfPTable(columns);
 		body.setHorizontalAlignment(Element.ALIGN_JUSTIFIED);
 		body.setWidthPercentage(100);
-				
-		content = new ArrayList<Cell>();
-
-		// cambios
-		NodeList header = xml.getElementsByTagName(Label.HEADER.value());
-		NodeList footer = xml.getElementsByTagName(Label.FOOTER.value());
-		NodeList elements = xml.getElementsByTagName(Label.BODY.value());
-		// \cambios
 		
 		NodeList groups = xml.getElementsByTagName(Label.GROUP.value());
 		NodeList waterMark = xml.getElementsByTagName(Label.WATERMARK.value());
 		
 		if(waterMark.getLength() > 0) buildWaterMark(waterMark.item(0));
 		
-		writer.setPageEvent(new FooterEvent());
-		writer.setPageEvent(new HeaderEvent());
+		List<Cell> contentHeader = new ArrayList<Cell>();
+		List<Cell> contentFooter = new ArrayList<Cell>();
+		List<Cell> contentBody = new ArrayList<Cell>();
 		
-		for(int index = 0; index < groups.getLength(); index++) 
-			content.add(buildElements(groups.item(index)));
+		for(int index = 0; index < groups.getLength(); index++) {
+			if(groups.item(index).getParentNode().getNodeName().equals(Label.HEADER.value()))
+				contentHeader.add(buildElements(groups.item(index)));
+			else if(groups.item(index).getParentNode().getNodeName().equals(Label.FOOTER.value()))
+				contentFooter.add(buildElements(groups.item(index)));
+			else
+				contentBody.add(buildElements(groups.item(index)));
+		}
 		
-		addContent(columns);
+		addContent(columns, header, contentHeader);
+		addContent(columns, footer, contentFooter);
+		addContent(columns, body, contentBody);
 		
-		document.setMargins(50, 10, 10, 10);
+		System.out.println(header.getTotalHeight());
+		System.out.println(footer.getNumberOfColumns());
+		System.out.println(body.getNumberOfColumns());
+		
+		if(!contentHeader.isEmpty()) {
+			writer.setPageEvent(new HeaderEvent(header));
+			marginTop += header.getTotalHeight();
+		}
+		
+		if(!contentFooter.isEmpty())
+			writer.setPageEvent(new FooterEvent(footer));
+				
+		document.setMargins(marginLeft, marginRight, marginTop, marginBottom);
 		document.setMarginMirroring(false);
 		document.open();
 		
@@ -179,7 +192,7 @@ public class XMLToPDF {
 			document.add(body);
 		} 
 		catch (DocumentException e) {
-			e.printStackTrace();
+			logger.log(Level.SEVERE, e.getMessage(), e);
 		}
 		
 		document.close();
@@ -209,14 +222,14 @@ public class XMLToPDF {
         		writer = PdfWriter.getInstance(document, new FileOutputStream(output));
 		} 
         catch (FileNotFoundException e) {
-			e.printStackTrace();
+        	logger.log(Level.SEVERE, e.getMessage(), e);
 		} 
         catch (DocumentException e) {
-			e.printStackTrace();
+        	logger.log(Level.SEVERE, e.getMessage(), e);
 		}
 	}
 	
-	private void addContent(int maxColumns) {
+	private void addContent(int maxColumns, PdfPTable container, List<Cell> content) {
 		Cell anterior = new Cell();
 		int rowDifference = 0;
 		int colDifference = 0;
@@ -261,7 +274,7 @@ public class XMLToPDF {
 		if(maxColumns > total) result.add(new Cell(anterior.row, total, maxColumns - total));
 		
 		
-		for (Cell cell : result) body.addCell(cell.container);
+		for (Cell cell : result) container.addCell(cell.container);
 	}
 	
 	private Cell buildElements(Node parent) {		
@@ -571,40 +584,40 @@ public class XMLToPDF {
 //	}
 	
 	public void help() {
-		System.out.println("-------------------");
-		System.out.println("|      Fonts      |");
-		System.out.println("-------------------");
-		System.out.println("1- " + BaseFont.COURIER);
-		System.out.println("2- " + BaseFont.HELVETICA);
-		System.out.println("3- " + BaseFont.SYMBOL);
-		System.out.println("4- " + BaseFont.TIMES_ROMAN);
+		logger.info("-------------------");
+		logger.info("|      Fonts      |");
+		logger.info("-------------------");
+		logger.info("1- " + BaseFont.COURIER);
+		logger.info("2- " + BaseFont.HELVETICA);
+		logger.info("3- " + BaseFont.SYMBOL);
+		logger.info("4- " + BaseFont.TIMES_ROMAN);
 		
-		System.out.println("-------------------");
-		System.out.println("|      Styles     |");
-		System.out.println("-------------------");
-		System.out.println("1- " + FontStyle.BOLD + ":" + FontStyle.BOLD.ordinal());
-		System.out.println("2- " + FontStyle.ITALIC + ":" + FontStyle.ITALIC.ordinal());
-		System.out.println("3- " + FontStyle.LINETHROUGH + ":" + FontStyle.LINETHROUGH.ordinal());
-		System.out.println("4- " + FontStyle.NORMAL + ":" + FontStyle.NORMAL.ordinal());
-		System.out.println("5- " + FontStyle.OBLIQUE + ":" + FontStyle.OBLIQUE.ordinal());
-		System.out.println("6- " + FontStyle.UNDERLINE + ":" + FontStyle.UNDERLINE.ordinal());
+		logger.info("-------------------");
+		logger.info("|      Styles     |");
+		logger.info("-------------------");
+		logger.info("1- " + FontStyle.BOLD + ":" + FontStyle.BOLD.ordinal());
+		logger.info("2- " + FontStyle.ITALIC + ":" + FontStyle.ITALIC.ordinal());
+		logger.info("3- " + FontStyle.LINETHROUGH + ":" + FontStyle.LINETHROUGH.ordinal());
+		logger.info("4- " + FontStyle.NORMAL + ":" + FontStyle.NORMAL.ordinal());
+		logger.info("5- " + FontStyle.OBLIQUE + ":" + FontStyle.OBLIQUE.ordinal());
+		logger.info("6- " + FontStyle.UNDERLINE + ":" + FontStyle.UNDERLINE.ordinal());
 		
-		System.out.println("-------------------");
-		System.out.println("|      Border     |");
-		System.out.println("-------------------");
-		System.out.println("1- TOP:" + Rectangle.TOP);
-		System.out.println("2- LEFT:" + Rectangle.LEFT);
-		System.out.println("3- BOTTOM:" + Rectangle.BOTTOM);
-		System.out.println("4- RIGHT:" + Rectangle.RIGHT);
-		System.out.println("5- NO BORDER:" + Rectangle.NO_BORDER);
-		System.out.println("6- BOX:" + Rectangle.BOX);
+		logger.info("-------------------");
+		logger.info("|      Border     |");
+		logger.info("-------------------");
+		logger.info("1- TOP:" + Rectangle.TOP);
+		logger.info("2- LEFT:" + Rectangle.LEFT);
+		logger.info("3- BOTTOM:" + Rectangle.BOTTOM);
+		logger.info("4- RIGHT:" + Rectangle.RIGHT);
+		logger.info("5- NO BORDER:" + Rectangle.NO_BORDER);
+		logger.info("6- BOX:" + Rectangle.BOX);
 		
-		System.out.println("-------------------");
-		System.out.println("|      Align      |");
-		System.out.println("-------------------");
-		System.out.println("1- CENTER:" + Alignment.RIGHT.ordinal());
-		System.out.println("2- LEFT:" + Alignment.LEFT.ordinal());
-		System.out.println("3- RIGHT:" + Alignment.CENTER.ordinal());
-		System.out.println("4- ANCHOR:" + Alignment.ANCHOR.ordinal());
+		logger.info("-------------------");
+		logger.info("|      Align      |");
+		logger.info("-------------------");
+		logger.info("1- CENTER:" + Alignment.RIGHT.ordinal());
+		logger.info("2- LEFT:" + Alignment.LEFT.ordinal());
+		logger.info("3- RIGHT:" + Alignment.CENTER.ordinal());
+		logger.info("4- ANCHOR:" + Alignment.ANCHOR.ordinal());
 	}
 }

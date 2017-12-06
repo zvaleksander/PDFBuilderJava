@@ -1,47 +1,21 @@
 package com.pdf.builder.util;
 
-import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Document;
-import com.itextpdf.text.Element;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.Phrase;
-import com.itextpdf.text.pdf.ColumnText;
-import com.itextpdf.text.pdf.PdfContentByte;
-import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfPageEventHelper;
 import com.itextpdf.text.pdf.PdfWriter;
 
 public class FooterEvent extends PdfPageEventHelper {
 
-	Font ffont = new Font(Font.FontFamily.UNDEFINED, 5, Font.ITALIC);
+	private PdfPTable content;
 	 
+	public FooterEvent(PdfPTable content) {
+		this.content = content;
+	}
+	
+	@Override
     public void onEndPage(PdfWriter writer, Document document) {
-    	 PdfPTable table = new PdfPTable(1);
-    	 System.out.println("left : " + document.left());
-    	 System.out.println("right: " + document.right());
-    	 System.out.println("top  : " + document.top());
-    	 System.out.println("bot  : " + document.bottom());
-         table.setTotalWidth(document.right() - document.left());
-         PdfPCell cell = new PdfPCell(new Phrase("This is a test document"));
-         cell.setBackgroundColor(BaseColor.ORANGE);
-         table.addCell(cell);
-         cell = new PdfPCell(new Phrase("This is a copyright notice"));
-         cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
-         
-         table.addCell(cell);
-         System.out.println("height  : " + table.getTotalHeight());
-         table.writeSelectedRows(0, -1, document.leftMargin(), document.bottom() + table.getTotalHeight(), writer.getDirectContent());
-//        PdfContentByte cb = writer.getDirectContent();
-//        Phrase header = new Phrase("this is a header", ffont);
-//        Phrase footer = new Phrase("this is a footer", ffont);
-//        ColumnText.showTextAligned(cb, Element.ALIGN_CENTER,
-//                header,
-//                (document.right() - document.left()) / 2 + document.leftMargin(),
-//                document.top() + 10, 0);
-//        ColumnText.showTextAligned(cb, Element.ALIGN_CENTER,
-//                footer,
-//                (document.right() - document.left()) / 2 + document.leftMargin(),
-//                document.bottom() - 10, 0);
+		content.setTotalWidth(document.right() - document.left());
+		content.writeSelectedRows(0, -1, document.leftMargin(), document.bottom() + content.getTotalHeight(), writer.getDirectContent());
     }
 }
