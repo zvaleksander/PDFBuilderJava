@@ -39,5 +39,35 @@ public class Documento {
 		this.detalle.add(new Detalle(2, "LT", "P002", "Producto N° 2", 5));
 		this.detalle.add(new Detalle(4, "LT", "P003", "Producto N° 3", 2));
 		this.detalle.add(new Detalle(1, "KG", "P004", "Producto N° 4", 28));
+		this.detalle.add(new Detalle(6, "KG", "P001", "Producto N° 1", 13));
+		this.detalle.add(new Detalle(2, "LT", "P002", "Producto N° 2", 5));
+		this.detalle.add(new Detalle(4, "LT", "P003", "Producto N° 3", 2));
+		this.detalle.add(new Detalle(1, "KG", "P004", "Producto N° 4", 28));
+		this.detalle.add(new Detalle(6, "KG", "P001", "Producto N° 1", 13));
+		this.detalle.add(new Detalle(2, "LT", "P002", "Producto N° 2", 5));
+		this.detalle.add(new Detalle(4, "LT", "P003", "Producto N° 3", 2));
+		this.detalle.add(new Detalle(1, "KG", "P004", "Producto N° 4", 28));
+		this.detalle.add(new Detalle(6, "KG", "P001", "Producto N° 1", 13));
+		this.detalle.add(new Detalle(2, "LT", "P002", "Producto N° 2", 5));
+		this.detalle.add(new Detalle(4, "LT", "P003", "Producto N° 3", 2));
+		this.detalle.add(new Detalle(1, "KG", "P004", "Producto N° 4", 28));
+		this.detalle.add(new Detalle(6, "KG", "P001", "Producto N° 1", 13));
+		this.detalle.add(new Detalle(2, "LT", "P002", "Producto N° 2", 5));
+		this.detalle.add(new Detalle(4, "LT", "P003", "Producto N° 3", 2));
+		this.detalle.add(new Detalle(1, "KG", "P004", "Producto N° 4", 28));
+		this.detalle.add(new Detalle(6, "KG", "P001", "Producto N° 1", 13));
+		this.detalle.add(new Detalle(2, "LT", "P002", "Producto N° 2", 5));
+		this.detalle.add(new Detalle(4, "LT", "P003", "Producto N° 3", 2));
+		this.detalle.add(new Detalle(1, "KG", "P004", "Producto N° 4", 28));
+		this.detalle.add(new Detalle(6, "KG", "P001", "Producto N° 1", 13));
+		this.detalle.add(new Detalle(2, "LT", "P002", "Producto N° 2", 5));
+		this.detalle.add(new Detalle(4, "LT", "P003", "Producto N° 3", 2));
+		this.detalle.add(new Detalle(1, "KG", "P004", "Producto N° 4", 28));
+		this.detalle.add(new Detalle(4, "LT", "P003", "Producto N° 3", 2));
+		this.detalle.add(new Detalle(1, "KG", "P004", "Producto N° 4", 28));
+		
+		this.detalle.add(new Detalle(1, "KG", "P004", "Producto N° 4", 28));
+		this.detalle.add(new Detalle(4, "LT", "P003", "Producto N° 3", 2));
+		this.detalle.add(new Detalle(1, "KG", "P004", "Producto N° 4", 28));
 	}
 }

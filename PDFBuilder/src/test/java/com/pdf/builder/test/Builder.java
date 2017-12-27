@@ -17,13 +17,13 @@ import com.pdf.builder.util.Utils;
 
 public class Builder {
 
-	private static final String INPUT = "C:\\Users\\xixaos\\Desktop\\input.xml"; 
-	private static final String OUTPUT = "C:\\Users\\xixaos\\Desktop\\output.pdf";
-	private static final String OUTPUT_ARRAY = "C:\\Users\\xixaos\\Desktop\\output_array.pdf";
+	private static final String INPUT = "C:\\Users\\ULASALLE\\Desktop\\input2.xml"; 
+	private static final String OUTPUT = "C:\\Users\\ULASALLE\\Desktop\\output.pdf";
+	private static final String OUTPUT_ARRAY = "C:\\Users\\ULASALLE\\Desktop\\output_array.pdf";
 	
 	public static void main(String[] args) throws DocumentException, ParserConfigurationException, SAXException, IOException {
 		
-		String logo = "C:\\Users\\xixaos\\Desktop\\batman.png";
+		String logo = "C:\\Users\\ULASALLE\\Desktop\\batman.png";
 		
 		Documento documento = new Documento(2, "73037079108", "F001", "1001", "CALLE LOS GIRASOLES MZ. C LT. 15", "SFU LA SALLE", "USD", "Ninguna observación", Utils.extractBytes(logo));
 		

@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,6 +47,7 @@ import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.pdf.builder.util.Attribute;
 import com.pdf.builder.util.Cell;
+import com.pdf.builder.util.Evaluator;
 import com.pdf.builder.util.FooterEvent;
 import com.pdf.builder.util.PDFEvent;
 import com.pdf.builder.util.Global.Property;
@@ -66,7 +68,7 @@ public class XMLToPDF {
 	
 	private org.w3c.dom.Document xml;
 	
-	private Parser parser;
+	private Evaluator parser;
 	private JSONObject data;
 	
 	private ByteArrayOutputStream byteArrayOutputStream  = new ByteArrayOutputStream();
@@ -77,10 +79,11 @@ public class XMLToPDF {
 	private float marginBottom;
 	
 	private static final Logger logger = Logger.getLogger(XMLToPDF.class.getName());
+	private static final DecimalFormat format = new DecimalFormat("0.00");
 	
 	public XMLToPDF(String inputPath, String outputPath, Object data, float marginLeft, float marginRight, float marginTop, float marginBottom, boolean vertical) {
 		this.data = new JSONObject(new Gson().toJson(data));
-        this.parser = new Parser(this.data);
+        this.parser = new Evaluator(this.data);
         
         this.marginLeft = marginLeft;
         this.marginRight = marginRight;
@@ -94,7 +97,7 @@ public class XMLToPDF {
 			builder = factory.newDocumentBuilder();
 			xml = builder.parse(file);
 			
-			create(outputPath, marginLeft, marginRight, marginTop, marginBottom, vertical);
+			create(outputPath, vertical);
 		}
 		catch (ParserConfigurationException e) {
 			logger.log(Level.SEVERE, e.getMessage(), e);
@@ -109,7 +112,7 @@ public class XMLToPDF {
 	
 	public XMLToPDF(byte [] xmlFile, Object data, float marginLeft, float marginRight, float marginTop, float marginBottom, boolean vertical) {
 		this.data = new JSONObject(new Gson().toJson(data));
-        this.parser = new Parser(this.data);
+        this.parser = new Evaluator(this.data);
         
         this.marginLeft = marginLeft;
         this.marginRight = marginRight;
@@ -122,7 +125,7 @@ public class XMLToPDF {
 			builder = factory.newDocumentBuilder();
 			xml = builder.parse(new ByteArrayInputStream(xmlFile));
 			
-			create(null, marginLeft, marginRight, marginTop, marginBottom, vertical);
+			create(null, vertical);
 		} 
 		catch (ParserConfigurationException e) {
 			logger.log(Level.SEVERE, e.getMessage(), e);
@@ -149,6 +152,7 @@ public class XMLToPDF {
 		PdfPTable body = new PdfPTable(columns);
 		body.setHorizontalAlignment(Element.ALIGN_JUSTIFIED);
 		body.setWidthPercentage(100);
+		body.flushContent();
 		
 		NodeList groups = xml.getElementsByTagName(Label.GROUP.value());
 		NodeList waterMark = xml.getElementsByTagName(Label.WATERMARK.value());
@@ -189,6 +193,22 @@ public class XMLToPDF {
 		document.open();
 		
 		try {
+//			Paragraph p = new Paragraph("Test");
+//			PdfPTable table = new PdfPTable(2);
+//			for (int i = 1; i < 6; i++) {
+//			    table.addCell("key " + i);
+//			    table.addCell("value " + i);
+//			}
+//			for (int i = 0; i < 40; i++) {
+//			    document.add(p);
+//			}
+//			
+//			PdfPTable nesting = new PdfPTable(1);
+//			PdfPCell cell = new PdfPCell(table);
+//			cell.setBorder(PdfPCell.NO_BORDER);
+//			nesting.addCell(cell);
+//			document.add(nesting);
+			body.setKeepTogether(true);
 			document.add(body);
 		} 
 		catch (DocumentException e) {
@@ -203,12 +223,7 @@ public class XMLToPDF {
 		return this.byteArrayOutputStream.toByteArray();
 	}
 	
-	private void create(String output, float marginLeft, float marginRight, float marginTop, float marginBottom, boolean vertical) {
-//		if(vertical)
-//			document = new Document(PageSize.A4, marginLeft, marginRight, marginTop, marginBottom);
-//		else
-//			document = new Document(PageSize.A4.rotate(), marginLeft, marginRight, marginTop, marginBottom);
-		
+	private void create(String output, boolean vertical) {
 		if(vertical)
 			document = new Document(PageSize.A4);
 		else
@@ -296,7 +311,15 @@ public class XMLToPDF {
 					response = Utils.validate(temp);
 					
 					if(response == Response.PLAIN_TEXT.value()) text = text.concat(temp).concat("\n");
-					else if(response == Response.DATA.value()) text = text.concat(parser.getValue(temp)).concat("\n");
+					else if(response == Response.DATA.value()) {
+						String value = parser.getValue(temp);
+						if (Utils.isNumeric(value) && value.contains(".")) {
+							double number = Double.parseDouble(value);						        
+					        text = format.format(number).replace(',', '.').concat("\n");
+						}	
+						else
+							text = text.concat(value).concat("\n");
+					}
 				}
 				PdfPCell container = getCell(getPhrase(text, parentAttributes), parentAttributes);
 								
@@ -351,7 +374,16 @@ public class XMLToPDF {
 					response = Utils.validate(temp);
 					
 					if(response == Response.PLAIN_TEXT.value()) text = text.concat(temp);
-					else if(response == Response.DATA.value()) text = text.concat(parser.getValue(temp));
+					else if(response == Response.DATA.value()) {
+						String value = parser.getValue(temp);
+						if (Utils.isNumeric(value) && value.contains(".")) {
+							double number = Double.parseDouble(value);
+					        text = format.format(number).replace(',', '.').concat("\n");
+						}
+						else
+							text = text.concat(value).concat("\n");
+					}
+					// else if(response == Response.DATA.value()) text = text.concat(parser.getValue(temp));
 				}
 
 				// Generación código QR
@@ -422,7 +454,16 @@ public class XMLToPDF {
 					response = Utils.validate(temp);
 					
 					if(response == Response.PLAIN_TEXT.value()) text = temp;
-					else if(response == Response.DATA.value()) text = parser.getValue(temp);
+					else if(response == Response.DATA.value()) {
+						String value = parser.getValue(temp);
+						if (Utils.isNumeric(value) && value.contains(".")) {
+							double number = Double.parseDouble(value);
+					        text = format.format(number).replace(',', '.').concat("\n");
+						}	
+						else
+							text = value.concat("\n");
+					}
+					// else if(response == Response.DATA.value()) text = parser.getValue(temp);
 					
 					PdfPCell cell = getCell(getPhrase(text, attribute), attribute);
 					table.addCell(cell);
@@ -465,6 +506,12 @@ public class XMLToPDF {
 							parentAttributes.fontColor = "#000000";
 							
 							text = parserTemp.getValue(attribute.aux_3);
+							
+							// Verifica si es número decimal
+							if (Utils.isNumeric(text) && text.contains(".")) {
+								double number = Double.parseDouble(text);						        
+						        text = format.format(number).replace(',', '.');
+							}
 							
 							// Agrega el cuerpo de la tabla
 							PdfPCell cell = getCell(getPhrase(text, parentAttributes), parentAttributes);

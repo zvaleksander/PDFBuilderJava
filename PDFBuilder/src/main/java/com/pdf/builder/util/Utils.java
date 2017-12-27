@@ -44,4 +44,8 @@ public class Utils {
 					Integer.valueOf(color.substring(5, 7), 16),
 				};
 	}
+	
+	public static boolean isNumeric(String s) {  
+	    return s != null && s.matches("[-+]?\\d*\\.?\\d+");  
+	}
 }
